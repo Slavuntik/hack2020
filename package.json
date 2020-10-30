@@ -1,0 +1,25 @@
+{
+  "name": "primecare.dtl",
+  "version": "1.0.0",
+  "description": "Prime Care - Pets database",
+  "engines": {
+    "node": "12.18.2",
+    "npm": "6.14.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Vyacheslav A. Fokin",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "espress": "0.0.0",
+    "mongodb": "^3.6.2",
+    "nodemon": "^2.0.6",
+    "passport": "^0.4.1",
+    "read-excel-file": "^4.0.7"
+  }
+}
