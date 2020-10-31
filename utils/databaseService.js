@@ -4,6 +4,10 @@ const settings = {
 
 const mongodb = require('mongodb');
 const { default: parseDate } = require('read-excel-file/commonjs/parseDate');
+const fs=require('fs')
+const imageToBase64 = require('image-to-base64');
+const imageThumbnail = require('image-thumbnail');
+let options = { percentage: 5, responseType: 'base64' }
 
 async function loadDataCollection(collectionName) {
     const client = await mongodb.MongoClient.connect(settings.connectionString, {
@@ -22,25 +26,62 @@ for (let i=0;i<stopWords.length;i++) {
 
 
 
+
+
 class databaseService  {
+    static checkPath(path) {
+        let fileExists=false
+        let tempPath=path
+        if (fs.existsSync(tempPath+".JPG")) {
+            tempPath+=".JPG"
+            fileExists=true
+        }
+        else if (fs.existsSync(tempPath+".jpg")) {
+            
+            tempPath+=".jpg"
+            fileExists=true
+        }
+        else if (fs.existsSync(tempPath+".jpeg")) {
+            tempPath+=".jpeg"
+            fileExists=true
+        } 
+        else if (fs.existsSync(tempPath+".JPEG")) {
+            tempPath+=".JPEG"
+            fileExists=true
+        }                  
+        if (fileExists) {
+            return tempPath
+        }
+        else {
+            return null
+        }
+    }
+
+    static async getPetPhotos(petid) {
+        try {
+        let photosCol=await loadDataCollection("Photos")
+        let _petid=new mongodb.ObjectID(petid)
+        let petPhotos=await photosCol.find({"petid":_petid}).toArray()
+        return petPhotos
+        }
+        catch(err) {
+            console.log(err)
+            return null
+        }
+    }
 
     static async getAllPets() {
         let petsCol=await loadDataCollection("Pets")
-        let pets=await petsCol.find({}).toArray()
-        if (pets) {
-            return pets.map((pet)=> {
-                return {
-                    pet:pet.petData
-                }
-            })
-        }
-        else {
-            return []
-        }
+        console.log("collection loaded")
+        let pets=await petsCol.find({},{petData:1,photos:0}).toArray()
+
+        console.log("done")
+        return pets
     }
 
     static async getDic(dicName) {
         let tempCol=await loadDataCollection("dics")
+        
         let dic=await tempCol.findOne({"header":dicName.toUpperCase()})
         if (dic) {
             return {
@@ -103,12 +144,17 @@ class databaseService  {
 
         //pets
         let petsCol=await loadDataCollection("Pets")
+        let photosCol=await loadDataCollection("Photos")
         await petsCol.deleteMany({})
+        await photosCol.deleteMany({})
+        
         let petsCounter=0
+        let photosImported=0
         for (let i=2;i<rows.length;i++) {
             let pet=[]
             let cellIndex=0
-
+            let shelterIndex=-1
+            let petCardIndex=-1
             for (let j=0;j<rows[1].length;j++) {
                 if (rows[1][j]&&rows[i][j]) {
                     
@@ -125,6 +171,12 @@ class databaseService  {
                             console.log(err)
                         }
                     }
+                    if (cellHeader=="АДРЕС ПРИЮТА") {
+                        shelterIndex=cellIndex
+                    }
+                    if (cellHeader=="КАРТОЧКА УЧЕТА ЖИВОТНОГО №") {
+                        petCardIndex=cellIndex
+                    }
                     let cell={
                         "cellIndex":cellIndex,
                         "cellHeader":cellHeader,
@@ -135,15 +187,95 @@ class databaseService  {
 
                 }
             }
-            
- 
-            pet.push({
-                "photos":[]
-            })
+            let importedPhoto=null
+            //checking is there any photo in import dir
+            let photo=null
+            if ((shelterIndex>-1)&&(petCardIndex>-1)) {
+                let arrayIndex=-1
+                for (let i=0;i<shelterDirs.length;i++) {
+                    if (shelterDirs[i].substr(3,shelterDirs[i].length-3).toUpperCase()==pet[shelterIndex].cellValue) {
+                        arrayIndex=i
+                        //console.log("MATCH", arrayIndex)
+                        break;
+
+                    }
+                }
+                if (arrayIndex>-1) {
+
+                try
+                {
+                    let path="/Users/vyacheslavfokin/Documents/DTL/product/backend/routes/import/adv/photo/"+shelterDirs[arrayIndex]+"/"+pet[petCardIndex].cellValue
+                    let fileExists=false
+                    
+                    let filePath=this.checkPath(path)
+                    if (filePath) {
+                        fileExists=true
+                    }
+                    else {
+                        path=path.replace("3-","з-")
+                        filePath=this.checkPath(path)
+                        if (filePath) {
+                            fileExists=true
+                        }
+                        else {
+                            path=path.replace("К","к")
+                            filePath=this.checkPath(path)
+                            if (filePath) {
+                                fileExists=true
+                            }
+
+                        }
+                    }
+                    if (fileExists) {
+                        console.log("loading photo ", filePath)
+                        await imageToBase64(filePath).then((r)=> {
+                            //console.log(r)
+                            importedPhoto=r
+                        }).catch((err)=> {
+                            console.log(err)
+                        })
+                        console.log("creating thumbnail for photo")
+                        try
+                        {
+                            let thumbnail=await imageThumbnail(filePath,options)
+                            console.log("created")
+                            pet.push({"thumbnail":thumbnail})
+        
+
+                        }
+                        catch (err) 
+                        {
+                            console.log(err)
+                        }
+
+                    }
+
+                    
+                    
+                }
+                catch
+                {
+
+                }
+             }
+            }
+
+            if (importedPhoto) {
+                photosImported++
+            }
             petsCounter++
             try
             {
-            await petsCol.insertOne({petData:pet})
+                let insertedId=null
+            await petsCol.insertOne({petData:pet}).then((r)=> {
+                insertedId=r.insertedId
+            }).catch(err=> {
+                console.log(err)
+            })
+            if (insertedId) {
+                await photosCol.insertOne({"petid":insertedId,photos:[importedPhoto]})
+            }
+
             }
             catch (err) {
                 console.log(err)
@@ -152,7 +284,8 @@ class databaseService  {
         }
 
         return {"petsImported":petsCounter,
-            dics
+        "photosImporeted":photosImported,
+            "NSI":dics
     }
     }
     
