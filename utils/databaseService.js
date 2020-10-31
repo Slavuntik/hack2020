@@ -7,7 +7,7 @@ const { default: parseDate } = require('read-excel-file/commonjs/parseDate');
 const fs=require('fs')
 const imageToBase64 = require('image-to-base64');
 const imageThumbnail = require('image-thumbnail');
-let options = { percentage: 5, responseType: 'base64' }
+let options = { percentage: 10, responseType: 'base64' }
 
 async function loadDataCollection(collectionName) {
     const client = await mongodb.MongoClient.connect(settings.connectionString, {
@@ -77,6 +77,20 @@ class databaseService  {
 
         console.log("done")
         return pets
+    }
+
+    static async getPetById(petid) {
+        let petsCol=await loadDataCollection("Pets")
+        console.log("collection loaded")
+        let pet=null
+        try
+        {
+            pet=await petsCol.findOne({_id:mongodb.ObjectID(petid)})
+        }
+        catch(err) {
+            console.log(err)
+        }
+        return pet
     }
 
     static async getDic(dicName) {
@@ -239,9 +253,11 @@ class databaseService  {
                         {
                             let thumbnail=await imageThumbnail(filePath,options)
                             console.log("created")
-                            pet.push({"thumbnail":thumbnail})
-        
-
+                            pet.push({
+                                cellIndex:999,
+                                cellValue:thumbnail,
+                                cellHeader:"thumbnail"
+                            })
                         }
                         catch (err) 
                         {
@@ -284,7 +300,7 @@ class databaseService  {
         }
 
         return {"petsImported":petsCounter,
-        "photosImporeted":photosImported,
+        "photosImported":photosImported,
             "NSI":dics
     }
     }
