@@ -1,5 +1,6 @@
 const settings = {
-    connectionString: "mongodb+srv://dtl:Kamaz$321@cluster0.1hfyy.mongodb.net/dtl?retryWrites=true&w=majority"
+    //connectionString: "mongodb+srv://dtl:Kamaz$321@cluster0.1hfyy.mongodb.net/dtl?retryWrites=true&w=majority"
+    connectionString:"mongodb://dtl:dtl2020@ds235169.mlab.com:35169/dtl2020"
 }
 
 const mongodb = require('mongodb');
