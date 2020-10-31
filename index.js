@@ -21,6 +21,9 @@ app.use('/pets',pets)
 const photos=require('./routes/photos')
 app.use('/photos',photos)
 
+const reports=require('./routes/reports')
+app.use('/reports',reports)
+
 
 if (process.env.NODE_ENV==='production') {
     console.log('production')

@@ -73,7 +73,7 @@ class databaseService  {
     static async getAllPets() {
         let petsCol=await loadDataCollection("Pets")
         console.log("collection loaded")
-        let pets=await petsCol.find({},{petData:1,photos:0}).toArray()
+        let pets=await petsCol.find({}).toArray()
 
         console.log("done")
         return pets
