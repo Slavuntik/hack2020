@@ -98,15 +98,18 @@ class databaseService  {
         let petsCounter=0
         for (let i=2;i<rows.length;i++) {
             let pet=[]
+            let cellIndex=0
             for (let j=0;j<rows[1].length;j++) {
                 if (rows[1][j]&&rows[i][j]) {
                     
                     let cellValue=rows[i][j].toString().replace(/ +/g, ' ').trim().toUpperCase()
                     let cellHeader=rows[1][j].toString().toUpperCase()
                     let cell={
+                        "cellIndex":cellIndex,
                         "cellHeader":cellHeader,
                         "cellValue":cellValue
                     }
+                    cellIndex++
                     pet.push(cell)
 
                 }
