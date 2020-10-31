@@ -10,7 +10,7 @@ console.log("get dics")
 
 router.get('/', async (req, res) => {
 
-    let dicName=req.query["header"].split(",")[0]
+    let dicName=req.query["header"].split(",")[0].toUpperCase()
     
     res.status(200).send(await databaseService.getDic(dicName))
 

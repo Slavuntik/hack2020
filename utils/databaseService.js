@@ -3,6 +3,7 @@ const settings = {
 }
 
 const mongodb = require('mongodb');
+const { default: parseDate } = require('read-excel-file/commonjs/parseDate');
 
 async function loadDataCollection(collectionName) {
     const client = await mongodb.MongoClient.connect(settings.connectionString, {
@@ -13,7 +14,7 @@ async function loadDataCollection(collectionName) {
 }
 
 let stopWords=[
-    "дата", "номер карточки", "возраст, год", "кличка", "карточка учета животного","вес, кг","особые приметы", "идентификационная метка","Вольер №","дата стерилизации","заказ-наряд / акт о поступлении животного №","заказ-наряд дата/ акт о поступлении животного, дата","акт отлова №","адрес места отлова","дата выбытия из приюта","дата поступления в приют","физическое лицо ф.и.о.","акт №","акт/договор №","карточка учета животного №","юридическое лицо","адрес приюта","№ п/п","№ серии","дата осмотра","выдан","дата выдачи","дата регистрации","адрес","телефон"
+    "дата", "номер карточки", "возраст, год", "кличка", "карточка учета животного","вес, кг","особые приметы", "идентификационная метка","Вольер №","дата стерилизации","заказ-наряд / акт о поступлении животного №","заказ-наряд дата/ акт о поступлении животного, дата","акт отлова №","адрес места отлова","дата выбытия из приюта","дата поступления в приют","физическое лицо ф.и.о.","акт №","акт/договор №","карточка учета животного №","юридическое лицо","№ п/п","№ серии","дата осмотра","выдан","дата выдачи","дата регистрации","адрес","телефон"
 ]
 for (let i=0;i<stopWords.length;i++) {
     stopWords[i]=stopWords[i].toUpperCase()
@@ -54,6 +55,7 @@ class databaseService  {
     }
 
     static async updateSourceData(rows) {
+        let shelterDirs=[]
         //updating dictionaries
         let tempCol=await loadDataCollection("dics")
         await tempCol.deleteMany({})
@@ -66,9 +68,13 @@ class databaseService  {
             
             for (let i=2;i<rows.length;i++) {
                 if (rows[i][j]) {
+                
                 let tt=rows[i][j].toString().replace(/ +/g, ' ').trim().toUpperCase();
                 if (values.indexOf(tt)==-1) {
                     values.push(tt)
+                    if (rows[1][j].toString().toUpperCase()=="АДРЕС ПРИЮТА") {
+                        shelterDirs.push((shelterDirs.length+1).toString()+". "+rows[i][j].toString().replace(/ +/g, ' ').trim())
+                    }
                 }
             }
             }
@@ -92,6 +98,9 @@ class databaseService  {
                 "count":arg.values.length
             }
         })
+
+        console.log(shelterDirs)
+
         //pets
         let petsCol=await loadDataCollection("Pets")
         await petsCol.deleteMany({})
@@ -99,11 +108,23 @@ class databaseService  {
         for (let i=2;i<rows.length;i++) {
             let pet=[]
             let cellIndex=0
+
             for (let j=0;j<rows[1].length;j++) {
                 if (rows[1][j]&&rows[i][j]) {
                     
                     let cellValue=rows[i][j].toString().replace(/ +/g, ' ').trim().toUpperCase()
                     let cellHeader=rows[1][j].toString().toUpperCase()
+                    if (cellValue.indexOf("GMT")>-1) {
+                        //formating date
+                        try
+                        {
+                            let tempDate=new Date(cellValue)
+                            cellValue=tempDate.getFullYear().toString()+"-"+(tempDate.getMonth()+1).toString().padStart(2,"0")+"-"+(tempDate.getDate()).toString()
+                        }
+                        catch(err) {
+                            console.log(err)
+                        }
+                    }
                     let cell={
                         "cellIndex":cellIndex,
                         "cellHeader":cellHeader,
@@ -114,6 +135,8 @@ class databaseService  {
 
                 }
             }
+            
+ 
             pet.push({
                 "photos":[]
             })
