@@ -15,6 +15,9 @@ app.use('/updatedb',updatedb)
 const getdics=require('./routes/getdics')
 app.use('/getdics',getdics)
 
+const pets=require('./routes/pets')
+app.use('/pets',pets)
+
 
 if (process.env.NODE_ENV==='production') {
     console.log('production')

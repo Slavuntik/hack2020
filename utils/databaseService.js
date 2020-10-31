@@ -22,6 +22,22 @@ for (let i=0;i<stopWords.length;i++) {
 
 
 class databaseService  {
+
+    static async getAllPets() {
+        let petsCol=await loadDataCollection("Pets")
+        let pets=await petsCol.find({}).toArray()
+        if (pets) {
+            return pets.map((pet)=> {
+                return {
+                    pet:pet.petData
+                }
+            })
+        }
+        else {
+            return []
+        }
+    }
+
     static async getDic(dicName) {
         let tempCol=await loadDataCollection("dics")
         let dic=await tempCol.findOne({"header":dicName.toUpperCase()})
@@ -38,11 +54,11 @@ class databaseService  {
     }
 
     static async updateSourceData(rows) {
+        //updating dictionaries
         let tempCol=await loadDataCollection("dics")
         await tempCol.deleteMany({})
         let counter=0
         let total=0
-        
         for (let j=0;j<rows[1].length;j++) {
             if (rows[1][j]&&(stopWords.indexOf(rows[1][j].toString().toUpperCase())==-1)) {
                 
@@ -76,9 +92,44 @@ class databaseService  {
                 "count":arg.values.length
             }
         })
-        return dics
-        
+        //pets
+        let petsCol=await loadDataCollection("Pets")
+        await petsCol.deleteMany({})
+        let petsCounter=0
+        for (let i=2;i<rows.length;i++) {
+            let pet=[]
+            for (let j=0;j<rows[1].length;j++) {
+                if (rows[1][j]&&rows[i][j]) {
+                    
+                    let cellValue=rows[i][j].toString().replace(/ +/g, ' ').trim().toUpperCase()
+                    let cellHeader=rows[1][j].toString().toUpperCase()
+                    let cell={
+                        "cellHeader":cellHeader,
+                        "cellValue":cellValue
+                    }
+                    pet.push(cell)
+
+                }
+            }
+            pet.push({
+                "photos":[]
+            })
+            petsCounter++
+            try
+            {
+            await petsCol.insertOne({petData:pet})
+            }
+            catch (err) {
+                console.log(err)
+            }
+            console.log(petsCounter)
+        }
+
+        return {"petsImported":petsCounter,
+            dics
     }
+    }
+    
 }
 
 
