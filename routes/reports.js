@@ -16,7 +16,22 @@ const getFieldByIndex=function(index,petData) {
             break
         }
     }
-    return result
+    if (index==23) {
+        if (result.indexOf("ВЛАДЕЛЕЦ")>-1) {
+            return getFieldByIndex(24,petData)
+        }
+        else {
+            if (result.indexOf("ЛИЦО")>-1) {
+                return getFieldByIndex(25,petData)
+            }
+            else {
+                return result
+            }
+        }
+    }
+    else {
+        return result
+    }
 }
 
 router.get('/', async (req, res) => {
@@ -93,14 +108,33 @@ router.get('/', async (req, res) => {
     let table = new Table({
         rows: tableRows
     });
+    let s1=new Paragraph({
+        text:"Приложение 4",alignment:AlignmentType.RIGHT
+    })
+    let s2=new Paragraph({
+        text:"РЕЕСТР ЖИВОТНЫХ",alignment:AlignmentType.CENTER
+    })
+    let s3=new Paragraph({
+        text:"г. Москва                                                          «___»______________20___ год.",alignment:AlignmentType.LEFT
+    })
+    let s4=new Paragraph({
+        text:"Приют для животных по адресу: ________________________________________",alignment:AlignmentType.LEFT
+    })
+    let s5=new Paragraph({
+        text:"Эксплуатирующая организация:_________________________________________",alignment:AlignmentType.LEFT
+    })
+    let s6=new Paragraph({})
+
+
+
 
     doc.addSection({
-        children: [table],
+        children: [s1,s6,s2,s6,s3,s4,s5,s6,table],
     });
 
     let b64string = await Packer.toBase64String(doc);
     
-    res.setHeader('Content-Disposition', 'attachment; filename=Prilojenie_4.docx');
+    res.setHeader('Content-Disposition', 'attachment; filename=Pril_4.docx');
     res.send(Buffer.from(b64string, 'base64'));  
     console.log("report created")  
 })
