@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "352747285685",
+    "firebase_url": "https://primecarepets.firebaseio.com",
+    "project_id": "primecarepets",
+    "storage_bucket": "primecarepets.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:352747285685:android:78f03d0c0072fc8bc4e2fc",
+        "android_client_info": {
+          "package_name": "ru.primecare.pets"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "352747285685-huplbbdnak8dbf9j5lcopq56fa4spupb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7bmhhCtZ1uiiU8PhNNXnXUtOLg3JPQWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "352747285685-huplbbdnak8dbf9j5lcopq56fa4spupb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
