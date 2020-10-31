@@ -35,6 +35,16 @@ const getFieldByIndex=function(index,petData) {
     }
 }
 
+const toFieldByIndex=function (index,petData,alias) {
+    let value=getFieldByIndex(index,petData)
+    if (value==alias) {
+        return alias.toUpperCase()+"     | X |       "
+    }
+    else {
+        return alias.toUpperCase()+"      "+value+"     "
+    }
+}
+
 router.get('/', async (req, res) => {
     const { Document, Packer, Paragraph, Table, TableCell, TableRow , AlignmentType, Media} = docx;
     let doc = new Document();
@@ -66,37 +76,77 @@ router.get('/', async (req, res) => {
             text:"Номер вольера:_______",alignment:AlignmentType.LEFT
         })
         
-        console.log(pet)
-        //let petImage=Media.addImage(doc,new Buffer(pet.thumbnail,'base64'))
+        //console.log(getFieldByIndex(999,pet.petData))
 
-        let table=new TableRow({
-            children:[
+        let petImage=Media.addImage(doc,Buffer.from(getFieldByIndex(999,pet.petData),'base64'),200,200)
+        
+
+        
+
+        let table=new Table({
+            rows:[
                 new TableRow({
                     children:[
+                                new TableCell({
+                                    children:[
+                                        new Paragraph({
+                                            text:"Основные сведения",alignment:AlignmentType.CENTER
+                                        }),
+                                        new Paragraph(
+                                            petImage
+                                        ),
+
+                            ],
+                            alignment:AlignmentType.CENTER
+                        }),
+                        
                         new TableCell({
                             children:[
-                                new TableRow({
-                                    children:[
-                                        new Paragraph({
-                                            text:"Основные сведения",alignment:AlignmentType.LEFT
-                                        })
-                                    ],
-
+                                new Paragraph({
+                                    text:toFieldByIndex(1,pet.petData,"СОБАКА")+toFieldByIndex(2,pet.petData,"ВОЗРАСТ")+toFieldByIndex(3,pet.petData,"ВЕС"),
+                                    alignment:AlignmentType.LEFT
                                 }),
-                                new TableRow({
-                                    children:[
-                                        new Paragraph({
-                                            image:null,alignment:AlignmentType.LEFT
-                                        })
-                                    ],
+                                new Paragraph({
+                                    text:"          КОШКА        {}           Кличка               {}",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"          Пол        {}             Порода        {}       ",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"          Окрас        {}             Шерсть        {}       ",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"          Уши        {}             Хвост        {}       ",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"          Размер        {}             Особые приметы       {}       ",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"                                                                     ",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"          Характер                                                    ",
+                                    alignment:AlignmentType.LEFT
+                                }),
+                                new Paragraph({
+                                    text:"                                                                     ",
+                                    alignment:AlignmentType.LEFT
                                 }),
 
-                            ]
+                    ]
                         })
                     ]
                 })
+        
             ]
-        })
+        }
+        )
 
         doc.addSection({
             children: [s1,s2,space,s3,space,s4,s5,s6,space,table],
