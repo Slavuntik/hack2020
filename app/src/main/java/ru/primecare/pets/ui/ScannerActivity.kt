@@ -25,10 +25,11 @@ class ScannerActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
         barcodeScanner = BarcodeScanner(this, binding.preview)
         barcodeScanner.viewCreated()
-
+        binding.cancel.setOnClickListener {
+            finish()
+        }
         barcodeScanner.onBarcodeDetected = {
 
-            Log.d("SACNRES", it[0])
         }
         barcodeScanner.onTextDetected = {
             if(!dialogDisplayed) {

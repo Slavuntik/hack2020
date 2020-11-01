@@ -66,19 +66,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        adapter.data.clear()
-        adapter.notifyDataSetChanged()
-        binding.loading.visibility = View.VISIBLE
-        lifecycleScope.launch {
-            loadData()
-        }
-    }
 
     suspend fun loadData(){
-
-
         adapter.data.addAll(dataProvider.getPetList())
         withContext(Dispatchers.Main){
             adapter.notifyDataSetChanged()
