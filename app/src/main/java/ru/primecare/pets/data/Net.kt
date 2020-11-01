@@ -1,13 +1,9 @@
 package ru.primecare.pets.data
 
-import android.util.Base64.decode
 import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
-import io.ktor.util.*
-import ru.primecare.pets.decodeBase64ToByteArray
-import java.util.*
 
 class Net {
     val BASE_URL= "https://dtl2020.herokuapp.com"

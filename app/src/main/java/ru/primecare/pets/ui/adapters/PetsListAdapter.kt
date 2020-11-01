@@ -9,13 +9,9 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import ru.primecare.pets.R
 import ru.primecare.pets.data.Net
-import ru.primecare.pets.decodeBase64ToByteArray
+import ru.primecare.pets.utils.decodeBase64ToByteArray
 import ru.primecare.pets.ui.entities.PetListItemInfo
 
 class PetsListAdapter(val data:MutableList<PetListItemInfo>): RecyclerView.Adapter<PetsListAdapter.ViewHolder>() {
@@ -47,7 +43,7 @@ class PetsListAdapter(val data:MutableList<PetListItemInfo>): RecyclerView.Adapt
                     Glide.with(holder.image.context)
                         .load(img).circleCrop()
                         .placeholder(R.drawable.image_placeholder)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(holder.image)
             }
 

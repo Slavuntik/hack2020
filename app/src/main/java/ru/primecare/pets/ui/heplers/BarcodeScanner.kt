@@ -11,6 +11,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import com.google.mlkit.vision.text.Text
 import java.util.concurrent.ExecutorService
 import kotlin.math.abs
 import kotlin.math.max
@@ -29,7 +30,7 @@ class BarcodeScanner(
         private set
 
     var onBarcodeDetected : (list:List<String>)->Unit = {}
-    var onTextDetected : (list:List<String>)->Unit={}
+    var onTextDetected : (Text)->Unit={}
     var onError: (e:java.lang.Exception)->Unit={}
 
     private val displayListener = object : DisplayManager.DisplayListener {

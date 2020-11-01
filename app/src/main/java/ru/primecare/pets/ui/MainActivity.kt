@@ -16,6 +16,7 @@ import ru.primecare.pets.data.DataProvider
 import ru.primecare.pets.databinding.ActivityMainBinding
 import ru.primecare.pets.ui.adapters.PetsListAdapter
 import ru.primecare.pets.ui.heplers.PermissionsManager
+import java.sql.Time
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     val dataProvider = DataProvider()
     lateinit var permissionsManager:PermissionsManager
     val scannerRequsetCode = 15
-
+    var searchresult:Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -59,9 +60,25 @@ class MainActivity : AppCompatActivity() {
             return@setOnEditorActionListener false
         }
 
+        binding.addBtn.setOnClickListener {
+            startActivity(Intent(this, PetFormActivity::class.java))
+        }
+
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        adapter.data.clear()
+        adapter.notifyDataSetChanged()
+        binding.loading.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            loadData()
+        }
     }
 
     suspend fun loadData(){
+
+
         adapter.data.addAll(dataProvider.getPetList())
         withContext(Dispatchers.Main){
             adapter.notifyDataSetChanged()
@@ -72,22 +89,36 @@ class MainActivity : AppCompatActivity() {
     fun search(code: String){
         val filteredData = dataProvider.filter(code)
         adapter.data.clear()
+        adapter.notifyDataSetChanged()
         if(code.isEmpty() || filteredData.isEmpty()){
+            searchresult = false
+            if(filteredData.isEmpty() && code.isNotEmpty()){
+                Toast.makeText(this, "Животное не найдено", Toast.LENGTH_LONG).show()
+            }
             binding.loading.visibility = View.VISIBLE
-            binding.petsList.visibility = View.GONE
             lifecycleScope.launch {
                 adapter.data.addAll(dataProvider.getPetList())
                 withContext(Dispatchers.Main){
                     adapter.notifyDataSetChanged()
                     binding.loading.visibility = View.GONE
-                    binding.petsList.visibility = View.VISIBLE
                 }
             }
         }else{
+            searchresult = true
             adapter.data.addAll(filteredData)
         }
 
     }
+
+    override fun onBackPressed() {
+        if(searchresult){
+            binding.searchField.setText("")
+            search("")
+        }else{
+            finish()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         if(!permissionsManager.permissionsGranted())
@@ -101,7 +132,9 @@ class MainActivity : AppCompatActivity() {
         }
         if(requestCode == scannerRequsetCode){
             if(data!=null){
-                val code = data.getStringExtra("code")?:""
+                val code = data.data.toString()
+                search(code)
+                binding.searchField.setText(code)
             }
         }
     }

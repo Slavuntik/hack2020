@@ -1,4 +1,4 @@
-package ru.primecare.pets
+package ru.primecare.pets.utils
 
 import java.io.ByteArrayOutputStream
 
