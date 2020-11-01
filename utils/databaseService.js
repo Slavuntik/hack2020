@@ -8,6 +8,7 @@ const { default: parseDate } = require('read-excel-file/commonjs/parseDate');
 const fs=require('fs')
 const imageToBase64 = require('image-to-base64');
 const imageThumbnail = require('image-thumbnail');
+const { Z_DEFAULT_COMPRESSION } = require('zlib');
 let options = { percentage: 10, responseType: 'base64' }
 
 async function loadDataCollection(collectionName) {
@@ -29,7 +30,59 @@ for (let i=0;i<stopWords.length;i++) {
 
 
 
+
+
 class databaseService  {
+    static async getSQLSchema() {
+        let dataCol=await loadDataCollection("dics")
+        let data=await dataCol.find({}).toArray()
+        let script=""
+
+        data.forEach((dic)=> {
+            let tempHeader=dic.header.replace('.','').replace(' ','_')
+            let s0="--СПРАВОЧНИК "+dic.header+"\n"
+            let s1="CREATE TABLE "+tempHeader+" (id serial PRIMARY KEY, value varchar(255));\n";
+            let c=0;
+            dic.values.forEach((val)=> {
+                let st="INSERT INTO "+tempHeader+" VALUES ("+c.toString()+", '" +val+"');\n";
+                s1+=st
+            })
+            script+=s0+s1+"--"+dic.values.length.toString()+" значений\n\n"
+        })
+        return script;
+    }
+
+    static async getAllPublicPets(query) {
+        return this.getAllPets()
+    }
+
+    static async meetandhelp(query) {
+        return {
+            response:"thankYou"
+        }
+    }
+    
+    
+    static async addValue(dicname,recvalue) {
+        let dataCol=await loadDataCollection("dics")
+        let data=await dataCol.findOne({"header":dicname.toUpperCase()})
+        console.log(data)
+        let values=data.values
+        if (!values) {
+            values=[]
+        }
+        if (values.indexOf(recvalue.toUpperCase()==-1)) {
+            values.push(recvalue.toUpperCase())
+            await dataCol.updateOne({"header":dicname.toUpperCase()},{$set:{"values":values}})
+            return true
+        }
+        else {
+            return false
+        }
+        
+
+    }
+
     static checkPath(path) {
         let fileExists=false
         let tempPath=path
@@ -71,6 +124,7 @@ class databaseService  {
         }
     }
 
+    
     static async getAllPets() {
         let petsCol=await loadDataCollection("Pets")
         console.log("collection loaded")
@@ -299,11 +353,13 @@ class databaseService  {
             }
             console.log(petsCounter)
         }
-
-        return {"petsImported":petsCounter,
+        let stat={"petsImported":petsCounter,
         "photosImported":photosImported,
             "NSI":dics
-    }
+        
+    }   
+        console.log(stat)
+        return stat
     }
     
 }

@@ -24,6 +24,15 @@ app.use('/photos',photos)
 const reports=require('./routes/reports')
 app.use('/reports',reports)
 
+const export1=require('./routes/export1')
+app.use('/sqlexport',export1)
+
+const publicpets=require('./routes/public/pets')
+app.use('/public/api/pets',publicpets)
+
+const enroll=require('./routes/public/meetandhelp')
+app.use('/public/api/meetandhelp',enroll)
+
 
 if (process.env.NODE_ENV==='production') {
     console.log('production')

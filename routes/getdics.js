@@ -16,5 +16,18 @@ router.get('/', async (req, res) => {
 
 })
 
+router.post('/',async (req,res)=> {
+    if (req.body) {
+        let result=false
+        if ((req.body.dicname)&&(req.body.value)) {
+            result=await databaseService.addValue(req.body.dicname,req.body.value)
+        }
+        res.status(200).send(result)
+    }
+    else {
+        res.status(401).send("nothing to add")
+    }
+})
+
 
 module.exports = router
